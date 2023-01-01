@@ -1,0 +1,44 @@
+version: '3'
+services:
+  hwdsl2-vpn:
+    container_name: hwdsl2-vpn
+    image: hwdsl2/ipsec-vpn-server:latest
+    environment:
+      # VPN_IPSEC_PSK: ''
+      # VPN_USER: ''
+      # VPN_PASSWORD: ''
+      VPN_DNS_SRV1: pihole
+      # VPN_DNS_SRV2: 8.8.8.8
+      # VPN_ADDL_USERS: 'user1 user2'
+      # VPN_ADDL_PASSWORDS: 'pass1 pass2'
+      # VPN_CLIENT_NAME: 
+    volumes:
+      - hwdsl2-vpn-data:/etc/ipsec.d
+      - /lib/modules:/lib/modules:ro
+    privileged: true
+    restart: always
+    ports:
+      - 500:500/udp
+      - 4500:4500/udp
+      
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 80:80/tcp
+    environment:
+      TZ: 'Asia/Jakarta'
+      # WEBPASSWORD: 'set a secure password here or it will be random'
+      WEBTHEME: 'default-auto'
+    volumes:
+      - pihole_app:/etc/pihole
+      - dns_config:/etc/dnsmasq.d
+    restart: unless-stopped
+
+volumes:
+  hwdsl2-vpn-data:
+  pihole_app:
+  dns_config:
